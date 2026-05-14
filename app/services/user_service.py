@@ -1,4 +1,4 @@
-from litestar.exceptions import NotAuthorizedException, ConflictException
+from litestar.exceptions import NotAuthorizedException, HTTPException
 from app.models.user import UserModel
 from app.domain.structs import UserCredentials, TokenResponse
 from app.services.auth_logic import hash_password, verify_password, create_access_token
@@ -10,7 +10,7 @@ async def register_new_user(data: UserCredentials, user_repo: UserRepository) ->
     existing_user = await user_repo.get_one_or_none(email=data.email)
     
     if existing_user:
-        raise ConflictException("El correo electrónico ya está registrado.")
+        raise HTTPException(status_code=409, detail="El correo electrónico ya está registrado.")    
     
     new_user = UserModel(
         email=data.email,
@@ -27,6 +27,6 @@ async def authenticate_user(data: UserCredentials, user_repo: UserRepository) ->
     if not user or not verify_password(data.password, user.hashed_password):
         raise NotAuthorizedException("Credenciales incorrectas.")
     
-    token = create_access_token(user.email, user.id)
+    token = create_access_token(user.email, str(user.id))
     
     return TokenResponse(access_token=token)
