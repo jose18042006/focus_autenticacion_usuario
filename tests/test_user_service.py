@@ -7,6 +7,7 @@ from app.services.user_service import register_new_user, authenticate_user
 from app.domain.structs import UserCredentials, UserRole
 from app.models.user import UserModel
 from app.services.auth_logic import hash_password
+from app.services.user_service import add_exp_to_user
 
 @pytest.mark.asyncio
 async def test_register_new_user_success():
@@ -69,3 +70,18 @@ async def test_authenticate_user_wrong_password():
     
     with pytest.raises(NotAuthorizedException):
         await authenticate_user(credentials, mock_repo)
+
+@pytest.mark.asyncio
+async def test_add_exp_to_user_level_up():
+    mock_repo = AsyncMock()
+    
+    fake_user = UserModel(id=uuid4(), email="estudiante@mail.com", total_exp=900, current_level=1)
+    mock_repo.get_one_or_none.return_value = fake_user
+    
+    result = await add_exp_to_user(fake_user.id, 200, mock_repo)
+    
+    assert result["new_exp"] == 1100
+    assert result["current_level"] == 2
+    assert result["leveled_up"] is True
+    
+    mock_repo.update.assert_called_once_with(fake_user)

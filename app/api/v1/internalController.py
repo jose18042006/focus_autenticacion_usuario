@@ -8,7 +8,7 @@ from app.repositories.user_repository import UserRepository
 class InternalController(Controller):
     path = "/internal/users"
 
-    @post("/{user_id:uuid}/add-xp", status_code=HTTP_200_OK)
+    @post("/{user_id:uuid}/add-exp", status_code=HTTP_200_OK)
     async def add_xp(
         self,
         user_id: UUID,
