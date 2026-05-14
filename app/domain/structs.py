@@ -18,6 +18,9 @@ class TokenResponse(msgspec.Struct):
 class UserProfileResponse(msgspec.Struct):
     id: UUID
     email: str
-    total_xp: int
+    total_exp: int
     current_level: int
     role: UserRole
+
+class ExpPayload(msgspec.Struct):
+    exp_to_add: int

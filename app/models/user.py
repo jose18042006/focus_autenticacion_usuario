@@ -11,5 +11,5 @@ class UserModel(Base):
     
     role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole), default=UserRole.STUDENT, nullable=False)
 
-    total_xp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    total_exp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     current_level: Mapped[int] = mapped_column(Integer, default=1, nullable=False)

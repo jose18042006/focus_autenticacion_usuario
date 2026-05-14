@@ -38,27 +38,27 @@ async def authenticate_user(
     
     return TokenResponse(access_token=token)
 
-async def add_xp_to_user(
+async def add_exp_to_user(
         user_id: UUID,
-        xp_to_add: int,
+        exp_to_add: int,
         user_repo: UserRepository
-    ) -> dict:
+        ) -> dict:
 
     user = await user_repo.get_one_or_none(id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    user.total_xp += xp_to_add
+    user.total_exp += exp_to_add
     
     nivel_anterior = user.current_level
-    user.current_level = (user.total_xp // 1000) + 1
+    user.current_level = (user.total_exp // 1000) + 1
     
     leveled_up = user.current_level > nivel_anterior
     
     await user_repo.update(user)
     
     return {
-        "new_xp": user.total_xp,
+        "new_exp": user.total_exp,
         "current_level": user.current_level,
         "leveled_up": leveled_up
     }
