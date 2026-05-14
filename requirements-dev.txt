@@ -1,0 +1,11 @@
+pytest==9.0.3
+pytest-asyncio==1.3.0
+litestar[standard]
+msgspec
+PyJWT
+argon2-cffi
+advanced-alchemy
+sqlalchemy
+asyncpg
+python-dotenv
+alembic
