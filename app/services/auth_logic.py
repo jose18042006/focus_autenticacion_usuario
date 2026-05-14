@@ -3,7 +3,6 @@ import jwt
 import os
 from datetime import datetime, timedelta, timezone
 
-# TODO: this will be in an .env or similar
 SECRET_KEY = os.getenv(
     "SECRET_KEY"
 )
