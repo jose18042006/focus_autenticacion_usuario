@@ -20,11 +20,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     except argon2.exceptions.InvalidHashError:
         return False
 
-def create_access_token(email: str, user_id: str) -> str:
+def create_access_token(email: str, user_id: str, role: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     payload = {
         "sub": email,          
-        "user_id": str(user_id), 
+        "user_id": str(user_id),
+        "role": role,
         "exp": int(expire.timestamp()) 
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)

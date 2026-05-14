@@ -14,7 +14,8 @@ async def register_new_user(data: UserCredentials, user_repo: UserRepository) ->
     
     new_user = UserModel(
         email=data.email,
-        hashed_password=hash_password(data.password)
+        hashed_password=hash_password(data.password),
+        role=data.role
     )
     created_user = await user_repo.add(new_user)
     
@@ -27,6 +28,6 @@ async def authenticate_user(data: UserCredentials, user_repo: UserRepository) ->
     if not user or not verify_password(data.password, user.hashed_password):
         raise NotAuthorizedException("Credenciales incorrectas.")
     
-    token = create_access_token(user.email, str(user.id))
+    token = create_access_token(user.email, str(user.id), user.role.value)
     
     return TokenResponse(access_token=token)
