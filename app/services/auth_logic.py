@@ -1,9 +1,12 @@
 import argon2
 import jwt
+import os
 from datetime import datetime, timedelta, timezone
 
 # TODO: this will be in an .env or similar
-SECRET_KEY = "una_clave_muy_secreta_y_larga_12345"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY"
+)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
