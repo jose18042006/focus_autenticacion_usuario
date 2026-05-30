@@ -6,7 +6,7 @@ from app.services.user_service import register_new_user, authenticate_user
 from app.repositories.user_repository import UserRepository
 
 class AuthController(Controller):
-    path = "/auth"
+    path = "/api/v1/auth"
 
     @post("/register", status_code=HTTP_201_CREATED)
     async def register(self, data: UserCredentials, user_repo: UserRepository) -> dict:

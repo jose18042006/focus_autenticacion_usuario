@@ -3,11 +3,10 @@ from uuid import uuid4
 from unittest.mock import AsyncMock
 from litestar.exceptions import HTTPException, NotAuthorizedException
 
-from app.services.user_service import register_new_user, authenticate_user
+from app.services.user_service import register_new_user, authenticate_user, update_user_exp
 from app.domain.structs import UserCredentials, UserRole
 from app.models.user import UserModel
 from app.services.auth_logic import hash_password
-from app.services.user_service import add_exp_to_user
 
 @pytest.mark.asyncio
 async def test_register_new_user_success():
@@ -46,7 +45,7 @@ async def test_authenticate_user_success():
         id=uuid4(), 
         email="fury@mail.com", 
         hashed_password=hash_password("password_correcta"),
-        role=UserRole.DM
+        role=UserRole.STUDENT
     )
     mock_repo.get_one_or_none.return_value = fake_user
     
@@ -72,16 +71,18 @@ async def test_authenticate_user_wrong_password():
         await authenticate_user(credentials, mock_repo)
 
 @pytest.mark.asyncio
-async def test_add_exp_to_user_level_up():
+async def test_update_user_exp_level_up():
     mock_repo = AsyncMock()
     
-    fake_user = UserModel(id=uuid4(), email="estudiante@mail.com", total_exp=900, current_level=1)
-    mock_repo.get_one_or_none.return_value = fake_user
+    fake_user = UserModel(id=uuid4(), email="estudiante@mail.com", total_exp=0, current_level=1)
     
-    result = await add_exp_to_user(fake_user.id, 200, mock_repo)
+    mock_repo.get_one.return_value = fake_user 
     
-    assert result["new_exp"] == 1100
-    assert result["current_level"] == 2
+    result = await update_user_exp(fake_user.id, 150, mock_repo)
+    
+    assert result["new_level"] == 2
     assert result["leveled_up"] is True
+    assert result["levels_gained"] == 1
     
     mock_repo.update.assert_called_once_with(fake_user)
+    assert fake_user.total_exp == 150
