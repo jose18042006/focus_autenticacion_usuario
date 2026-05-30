@@ -1,4 +1,5 @@
 from uuid import UUID
+import math
 from litestar.exceptions import NotAuthorizedException, HTTPException
 from app.models.user import UserModel
 from app.domain.structs import UserCredentials, TokenResponse
@@ -38,27 +39,32 @@ async def authenticate_user(
     
     return TokenResponse(access_token=token)
 
-async def add_exp_to_user(
-        user_id: UUID,
-        exp_to_add: int,
-        user_repo: UserRepository
-        ) -> dict:
-
-    user = await user_repo.get_one_or_none(id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+async def update_user_exp(user_id: UUID, added_exp: int, user_repo: UserRepository) -> dict:
+    user = await user_repo.get_one(id=user_id)
     
-    user.total_exp += exp_to_add
+    user.total_exp += added_exp
     
-    nivel_anterior = user.current_level
-    user.current_level = (user.total_exp // 1000) + 1
+    new_level = get_level_from_total_exp(user.total_exp)
     
-    leveled_up = user.current_level > nivel_anterior
-    
-    await user_repo.update(user)
-    
-    return {
-        "new_exp": user.total_exp,
-        "current_level": user.current_level,
-        "leveled_up": leveled_up
+    result = {
+        "new_level": new_level,
+        "levels_gained": new_level - user.current_level,
+        "leveled_up": new_level > user.current_level
     }
+    
+    user.current_level = new_level
+    await user_repo.update(user)
+    return result
+
+
+def calculate_total_exp_required(level: int, base: int = 100, ratio: float = 1.2) -> int:
+    if level <= 1:
+        return 0
+    return int(base * (math.pow(ratio, level - 1) - 1) / (ratio - 1))
+
+def get_level_from_total_exp(total_exp: int, base: int = 100, ratio: float = 1.2) -> int:
+    if total_exp < base:
+        return 1
+    val = (total_exp * (ratio - 1) / base) + 1
+    level = math.log(val, ratio) + 1
+    return int(level)
