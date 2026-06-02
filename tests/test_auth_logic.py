@@ -28,7 +28,11 @@ def test_create_access_token():
     
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     
-    assert payload["sub"] == test_email
-    assert payload["user_id"] == test_id
+    assert payload["sub"] == test_id
+    
+    assert payload["email"] == test_email
+    
     assert payload["role"] == test_role
-    assert "exp" in payload 
+    assert "exp" in payload
+    
+    assert "iat" in payload

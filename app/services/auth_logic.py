@@ -23,11 +23,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 def create_access_token(email: str, user_id: str, role: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     payload = {
         "sub": str(user_id),         
         "email": email,
         "role": role,
-        "exp": int(expire.timestamp()) 
+        "exp": int(expire.timestamp()),
+        "iat": int(now.timestamp())
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
