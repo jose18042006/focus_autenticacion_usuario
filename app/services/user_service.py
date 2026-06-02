@@ -22,7 +22,7 @@ async def register_new_user(
         hashed_password=hash_password(data.password),
         role=data.role
     )
-    created_user = await user_repo.add(new_user)
+    created_user = await user_repo.add(new_user, auto_commit=True)
     
     return created_user
 

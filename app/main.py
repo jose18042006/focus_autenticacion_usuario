@@ -19,5 +19,6 @@ app = Litestar(
     plugins=[db_plugin],
     dependencies={
         "user_repo": Provide(provide_user_repo)
-    }
+    },
+    debug=True
 )
