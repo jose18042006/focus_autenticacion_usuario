@@ -6,6 +6,7 @@ from app.api.v1.usersController import UsersController
 from app.repositories.user_repository import UserRepository
 from app.core.db_config import db_plugin
 from app.core.security import jwt_auth
+from app.core.exceptions import GLOBAL_EXCEPTION_HANDLERS
 
 async def provide_user_repo(db_session: AsyncSession) -> UserRepository:
     return UserRepository(session=db_session)
@@ -20,5 +21,6 @@ app = Litestar(
     dependencies={
         "user_repo": Provide(provide_user_repo)
     },
-    debug=True
+    exception_handlers=GLOBAL_EXCEPTION_HANDLERS,
+    debug=False
 )
