@@ -80,9 +80,9 @@ async def test_update_user_exp_level_up():
     
     result = await update_user_exp(fake_user.id, 150, mock_repo)
     
-    assert result["new_level"] == 2
-    assert result["leveled_up"] is True
-    assert result["levels_gained"] == 1
+    assert result.new_level == 2
+    assert result.leveled_up is True
+    assert result.levels_gained == 1
     
     mock_repo.update.assert_called_once_with(fake_user)
     assert fake_user.total_exp == 150

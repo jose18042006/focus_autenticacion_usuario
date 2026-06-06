@@ -16,6 +16,7 @@ from app.domain.structs import TokenResponse
 from app.models.user import UserModel
 from app.domain.structs import UserRole
 from app.repositories.user_repository import UserRepository
+from app.domain.structs import TokenResponse, UserRole, RegisterResponse, UpdateExpResponse
 
 os.environ["SECRET_KEY"] = "clave_super_secreta"
 
@@ -24,10 +25,11 @@ def get_test_token(user_id: str) -> str:
     if not isinstance(secret, str):
         secret = str(secret)
     now = datetime.now(timezone.utc)
+    exp = now + timedelta(minutes=10)
     payload = {
         "sub": user_id,
-        "exp": now + timedelta(minutes=10),
-        "iat": now
+        "exp": int(exp.timestamp()), 
+        "iat": int(now.timestamp())  
     }
     return jwt.encode(payload, secret, algorithm="HS256")
 
@@ -48,8 +50,13 @@ def client(mock_repo):
 @mock_patch("app.api.v1.authController.register_new_user", new_callable=AsyncMock)
 def test_register_endpoint(mock_register, client: TestClient) -> None:
     fake_uuid = uuid4()
-    mock_register.return_value = UserModel(id=fake_uuid, email="api@mail.com", role=UserRole.STUDENT)
     
+    mock_register.return_value = RegisterResponse(
+        message="Usuario registrado exitosamente", 
+        email="api@mail.com", 
+        id=fake_uuid
+    )
+
     response = client.post(
         "api/v1/auth/register", 
         json={"email": "api@mail.com", "password": "123", "role": "student"}
@@ -78,11 +85,11 @@ def test_login_endpoint(mock_auth, client: TestClient) -> None:
 def test_add_exp_batch_endpoint(mock_update_exp, client: TestClient) -> None:
     test_uuid = str(uuid4())
     
-    mock_update_exp.return_value = {
-        "new_level": 2, 
-        "levels_gained": 1, 
-        "leveled_up": True
-    }
+    mock_update_exp.return_value = UpdateExpResponse(
+        new_level=2, 
+        levels_gained=1, 
+        leveled_up=True
+    )
     
     auth_headers = {"Authorization": f"Bearer {get_test_token(test_uuid)}"}
     
