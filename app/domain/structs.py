@@ -24,3 +24,13 @@ class UserProfileResponse(msgspec.Struct):
 
 class ExpPayload(msgspec.Struct):
     exp_to_add: int
+
+class RegisterResponse(msgspec.Struct):
+    message: str
+    email: str
+    id: UUID
+
+class UpdateExpResponse(msgspec.Struct):
+    new_level: int
+    levels_gained: int
+    leveled_up: bool
