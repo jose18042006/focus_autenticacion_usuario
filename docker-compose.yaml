@@ -1,0 +1,32 @@
+services:
+  auth_db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: auth_password
+      POSTGRES_DB: focus_auth_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d focus_auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  auth_ms:
+    build:
+      context: .
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - DATABASE_URL=postgresql+asyncpg://user:auth_password@auth_db:5432/focus_auth_db
+      - SECRET_KEY=clave_super_secreta
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+volumes:
+  auth_data:
