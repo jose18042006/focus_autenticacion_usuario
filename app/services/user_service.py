@@ -61,7 +61,8 @@ async def update_user_exp(
     return UpdateExpResponse(
         new_level=new_level,
         levels_gained=levels_gained,
-        leveled_up=leveled_up
+        leveled_up=leveled_up,
+        total_exp=user.total_exp
     )
 
 
