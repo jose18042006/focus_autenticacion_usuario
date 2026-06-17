@@ -34,3 +34,4 @@ class UpdateExpResponse(msgspec.Struct):
     new_level: int
     levels_gained: int
     leveled_up: bool
+    total_exp: int
