@@ -88,7 +88,8 @@ def test_add_exp_batch_endpoint(mock_update_exp, client: TestClient) -> None:
     mock_update_exp.return_value = UpdateExpResponse(
         new_level=2, 
         levels_gained=1, 
-        leveled_up=True
+        leveled_up=True,
+        total_exp=150
     )
     
     auth_headers = {"Authorization": f"Bearer {get_test_token(test_uuid)}"}
