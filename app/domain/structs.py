@@ -35,3 +35,7 @@ class UpdateExpResponse(msgspec.Struct):
     levels_gained: int
     leveled_up: bool
     total_exp: int
+
+class UserStatsResponse(msgspec.Struct):
+    total_exp: int
+    current_level: int
