@@ -56,7 +56,7 @@ async def update_user_exp(
     leveled_up = new_level > user.current_level
     user.current_level = new_level
 
-    await user_repo.update(user)
+    await user_repo.update(user, auto_commit=True)
     
     return UpdateExpResponse(
         new_level=new_level,
