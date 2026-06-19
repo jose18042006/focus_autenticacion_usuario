@@ -8,15 +8,14 @@ from datetime import datetime, timedelta, timezone
 from litestar import Litestar
 from litestar.testing import TestClient
 from litestar.di import Provide
-
+from litestar.exceptions import NotFoundException
 from app.api.v1.authController import AuthController
 from app.api.v1.usersController import UsersController 
 from app.core.security import jwt_auth
 from app.domain.structs import TokenResponse
-from app.models.user import UserModel
-from app.domain.structs import UserRole
 from app.repositories.user_repository import UserRepository
-from app.domain.structs import TokenResponse, UserRole, RegisterResponse, UpdateExpResponse
+from app.domain.structs import RegisterResponse, UpdateExpResponse, UserStatsResponse
+
 
 os.environ["SECRET_KEY"] = "clave_super_secreta"
 
@@ -105,3 +104,42 @@ def test_add_exp_batch_endpoint(mock_update_exp, client: TestClient) -> None:
     assert data["new_level"] == 2
     assert data["leveled_up"] is True
     assert data["levels_gained"] == 1
+
+@mock_patch("app.api.v1.usersController.get_stats_from_user", new_callable=AsyncMock)
+def test_get_my_stats_endpoint_success(mock_search_stats, client: TestClient) -> None:
+    test_uuid = str(uuid4())
+    
+    mock_search_stats.return_value = UserStatsResponse(
+        total_exp=450,
+        current_level=5
+    )
+    
+    auth_headers = {"Authorization": f"Bearer {get_test_token(test_uuid)}"}
+    
+    response = client.get(
+        "/api/v1/users/me/stats",
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_exp"] == 450
+    assert data["current_level"] == 5
+
+@mock_patch("app.api.v1.usersController.get_stats_from_user", new_callable=AsyncMock)
+def test_get_my_stats_endpoint_not_found(mock_search_stats, client: TestClient) -> None:
+    test_uuid = str(uuid4())
+    
+    mock_search_stats.side_effect = NotFoundException("Usuario no encontrado en la base de datos.")
+    
+    auth_headers = {"Authorization": f"Bearer {get_test_token(test_uuid)}"}
+    
+    response = client.get(
+        "/api/v1/users/me/stats",
+        headers=auth_headers
+    )
+    
+    assert response.status_code == 404
+    data = response.json()
+    assert "detail" in data
+    assert "Usuario no encontrado" in data["detail"]

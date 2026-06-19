@@ -4,7 +4,8 @@ from litestar.exceptions import NotAuthorizedException, HTTPException
 from app.models.user import UserModel
 from app.services.auth_logic import hash_password, verify_password, create_access_token
 from app.repositories.user_repository import UserRepository
-from app.domain.structs import UserCredentials, TokenResponse, RegisterResponse, UpdateExpResponse
+from app.domain.structs import UserCredentials, TokenResponse, RegisterResponse, UpdateExpResponse, UserStatsResponse
+from litestar.exceptions import NotFoundException
 
 async def register_new_user(
         data: UserCredentials,
@@ -63,6 +64,20 @@ async def update_user_exp(
         levels_gained=levels_gained,
         leveled_up=leveled_up,
         total_exp=user.total_exp
+    )
+
+async def get_stats_from_user(
+    user_id: UUID,
+    user_repo: UserRepository
+) -> UserStatsResponse:
+    
+    user = await user_repo.get_one_or_none(id=user_id)
+    if not user:
+        raise NotFoundException("Usuario no encontrado en la base de datos.")
+    
+    return UserStatsResponse(
+        total_exp=user.total_exp,
+        current_level=user.current_level
     )
 
 
