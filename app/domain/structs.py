@@ -5,11 +5,12 @@ from enum import Enum
 class UserRole(str, Enum):
     STUDENT = "student"
     DM = "dm"
+    ADMINISTRADOR = "administrador"  # Enlazado como rol oficial del panel
 
 class UserCredentials(msgspec.Struct):
     email: str
     password: str
-    role: UserRole = UserRole.STUDENT
+    role: UserRole = UserRole.STUDENT  # Permite recibir el rol explícito en el JSON
 
 class TokenResponse(msgspec.Struct):
     access_token: str
