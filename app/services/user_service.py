@@ -5,6 +5,7 @@ from app.models.user import UserModel
 from app.services.auth_logic import hash_password, verify_password, create_access_token
 from app.repositories.user_repository import UserRepository
 from app.domain.structs import UserCredentials, TokenResponse, RegisterResponse, UpdateExpResponse, UserStatsResponse, UserRole
+import msgspec # <-- Importación necesaria para convertir estructuras
 
 async def register_new_user(
         data: UserCredentials,
@@ -46,9 +47,9 @@ async def authenticate_user(
     return TokenResponse(access_token=token)
 
 async def update_user_exp(
-    user_id: UUID,
-    added_exp: int,
-    user_repo: UserRepository
+        user_id: UUID,
+        added_exp: int,
+        user_repo: UserRepository
 ) -> UpdateExpResponse:
     user = await user_repo.get_one(id=user_id)
     
@@ -106,7 +107,7 @@ async def get_all_users_list(user_repo: UserRepository) -> list[UserModel]:
 
 async def modify_user_full(
     user_id: UUID, 
-    payload: dict, 
+    payload: any, # <-- Cambiado a any para recibir dict o Struct de msgspec de forma segura
     user_repo: UserRepository
 ) -> UserModel:
     """Modifica dinámicamente cualquier campo editado desde la interfaz web"""
@@ -114,10 +115,21 @@ async def modify_user_full(
     if not user:
         raise NotFoundException("El usuario solicitado no existe.")
 
-    if "email" in payload:
+    # 🛡️ BLINDAJE INTEGRAL CONTRA NONETYPE Y STRUCTS DE MSGSPEC
+    if payload is None:
+        payload = {}
+    elif isinstance(payload, msgspec.Struct):
+        # Si Litestar lo mapeó como un Struct de msgspec, lo pasamos a un dict de Python limpio
+        payload = {k: getattr(payload, k) for k in payload.__struct_fields__ if getattr(payload, k) is not None}
+    elif not isinstance(payload, dict):
+        # Respaldo genérico para objetos basados en clases tradicionales
+        payload = getattr(payload, "__dict__", {})
+
+    # Ahora todas las validaciones son 100% seguras y libres de errores 'NoneType'
+    if "email" in payload and payload["email"]:
         user.email = payload["email"]
         
-    if "role" in payload:
+    if "role" in payload and payload["role"] is not None:
         role_str = str(payload["role"]).lower().strip()
         if role_str == "administrador":
             user.role = UserRole.ADMINISTRADOR
@@ -126,10 +138,10 @@ async def modify_user_full(
         else:
             user.role = UserRole.STUDENT
             
-    if "current_level" in payload:
+    if "current_level" in payload and payload["current_level"] is not None:
         user.current_level = int(payload["current_level"])
         
-    if "total_exp" in payload:
+    if "total_exp" in payload and payload["total_exp"] is not None:
         user.total_exp = int(payload["total_exp"])
         
     if "password" in payload and payload["password"]:
